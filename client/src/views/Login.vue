@@ -4,15 +4,15 @@
       <h1>Log in</h1>
       <div id="form">
         <div class= "mt-2">
-          <input type="email" class="mt-3" id="email" placeholder="E-mail">
+          <input type="email" class="mt-3" id="email" placeholder="E-mail" v-model="data.email_address">
         </div>
 
         <div class= "mt-2">
-          <input type="password" class="mt-3" id="pwd" placeholder="Password">
+          <input type="password" class="mt-3" id="pwd" placeholder="Password" v-model="data.password">
         </div>
       </div>
       <div>
-      <b-button class="pb-2" variant="primary" v-on:click="getData()" >Log in</b-button>
+      <b-button class="pb-2" variant="primary" v-on:click="freelancerLogin()" >Log in</b-button>
       </div>
     </form>
   </div>
@@ -46,15 +46,29 @@
 </style>
 
 <script>
+import FreelancersOps from '../freelancers_views/FreelancersOps'
 export default {
   name: 'login',
-
+  data() {
+    return {
+      data: {
+        email_address: '',
+        password: ''
+      }
+    }
+  },
   methods: {
-    getData() {
-      const email = document.getElementById('email').value
-      const password = document.getElementById('pwd').value
-
-      alert(email + ' ' + password)
+    freelancerLogin() {
+      FreelancersOps.loginFreelancer(this.data)
+        .then(response => {
+          let token = response.data.token;
+          localStorage.setItem("jwt", token);
+          this.$toasted.show('Successfully logged in!')
+          this.$router.push('/')
+        })
+        .catch(error => {
+           this.$toasted.show('Login failed')
+        });
     }
   }
 }

@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Login from './views/Login.vue'
-import Register from './freelancers_views/RegisterFreelancer.vue'
+import RegisterFreelancer from './freelancers_views/RegisterFreelancer.vue'
 import Jobs from './views/Jobs.vue'
 import Freelancers from './freelancers_views/Freelancers.vue'
 import Freelancer from './freelancers_views/Freelancer.vue'
@@ -32,9 +32,9 @@ export default new Router({
     },
 
     {
-      path: '/register',
-      name: 'register',
-      component: Register
+      path: '/register/freelancers',
+      name: 'registerFreelancer',
+      component: RegisterFreelancer
     },
 
     {
