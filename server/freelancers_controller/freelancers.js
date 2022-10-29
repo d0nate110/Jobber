@@ -1,14 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const user_login = require("../logins/loginUser");
 const FreelancerModel = require('../models/freelancer');
 const ResumeModel = require('../models/resume');
-const JobPostModel = require('../models/job_post');
-const freelancers = []
+const authorization = require('../configuration/authorization');
 
 
 
-router.post('/freelancers', async (request, response) => {
+
+router.post('/register/freelancers', async (request, response) => {
 
     
     try {
@@ -21,16 +20,38 @@ router.post('/freelancers', async (request, response) => {
             phone_number: request.body.phone_number,
             description: request.body.description,
             password: request.body.password
-        })
-        const createdFreelancer = await freelancer.save();
-        freelancers.push(createdFreelancer)
-        
-        response.json(createdFreelancer);
+        });
+        const data = await freelancer.save();
+        const token = await freelancer.generateAuthToken();
+        response.status(201).json({ data, token });
     }
     catch (error) {
         response.status(400).json({ message: error.message });
     }
 });
+
+router.post('/login', async (request, response) => {
+
+    try {
+
+        const freelancer = await FreelancerModel.findByCredentials(request.body.email_address, request.body.password);
+        if (!freelancer) {
+            return response.status(401).json({ error: "Wrong credentials" });
+        }
+        const token = await freelancer.generateAuthToken();
+        response.status(201).json({ freelancer, token });
+    } catch (error) {
+        response.status(400).json({ error: "bad request" });
+    }
+});
+
+router.get('/:id', authorization, async (request, response) => {
+    const id = request.params.id;
+    await response.json(request.userData);
+
+});
+
+
 
 router.get('/freelancers', function (request, response) {
 
@@ -222,102 +243,6 @@ router.delete('/freelancers/:id/resumes/:id', async (request, response) => {
         response.status(500).json({ message: error.message });
     }
 });
-
-router.get('/freelancers?skills_field=JavaScript', async (request, response) => {
-
-  
-    try {// does not work for now
-
-        FreelancerModel
-            .find({"resume.skills_field": "JavaScript"})
-            .select("first_name")
-            .exec()
-        
-        
-    } catch (error) {
-        response.status(500).json({ message: error.message });
-    }
-
-
-});
-
-
-//Get freelancer filter by first name
-router.get('/freelancers', function(req, res, next) {   
-    if (!req.query.first_name){return next();}
-    FreelancerModel.find({
-        first_name: { $regex: req.query.first_name, $options: 'i' }
-    },
-        function(err, freelancers) {
-            if (err) { return next(err); }
-            if (!freelancers) { return res.status(404).json(
-                {'message': 'no freelancer found'});
-            }
-        res.status(200).json(freelancers);
-    });
-});
-
-router.get('/freelancers/:id/job_posts/:id', function (request, response, next) {
-    const id = request.params.id;
-
-    FreelancerModel.findById(id, function (error, freelancer) {
-        if (error) { return next(error); }
-        if (freelancer == null) {
-            return response.status(404).json({ "message": "Freelancer not found" });
-        } 
-        
-// const loginUser = async (request, response, next, email, password) => {
-//     const user = loginUser.user_login(email, password)
-
-//     if (user == "err") {
-//         return next(user)
-//     }
-
-//     if (freelancer == "user_not_found") {
-//         return response.status(404).json({ "message": "Invalid email", "logged_in": false, })
-//     }
-
-//     if (freelancer == "invalid_password") {
-//         return response.status(401).json({ "message": "Wrong password", "logged_in": false, })
-//     }
-
-//     response.json({"user": user, "logged_in": true,})
-// }
-
-// const login_user = async (request, response, next, email, password) => {
-//     const user = loginUser.loginUser(email, password)
-
-//     if (user == "err") {
-//         return next(user)
-//     }
-
-//     if (freelancer == "user_not_found") {
-//         return response.status(404).json({ "message": "Invalid email", "logged_in": false, })
-//     }
-
-//     if (freelancer == "invalid_password") {
-//         return response.status(401).json({ "message": "Wrong password", "logged_in": false, })
-//     }
-
-//     response.json({"user": user, "logged_in": true,})
-// }
-
-
-        JobPostModel.find(function (error, job_post) {
-            if (error) { return next(error); }
-            if (job_post == null) {
-                return response.status(404).json({ "message": "Job post not found" });
-                loginUser
-            }
-            response.json(job_post);
-        });
-    });
-});
-
-
-
-
-
 
 
 

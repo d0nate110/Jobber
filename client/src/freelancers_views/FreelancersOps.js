@@ -10,12 +10,19 @@ class FreelancersOps {
   }
 
   createOneFreelancer(form) {
-    return Api.post('/freelancers', {
+    return Api.post('/register/freelancers', {
       first_name: form.first_name,
       last_name: form.last_name,
       description: form.description,
       email_address: form.email_address,
       phone_number: form.phone_number,
+      password: form.password
+    })
+  }
+
+  loginFreelancer(form) {
+    return Api.post('/login', {
+      email_address: form.email_address,
       password: form.password
     })
   }

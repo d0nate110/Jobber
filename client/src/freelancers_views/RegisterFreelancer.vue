@@ -114,12 +114,12 @@ export default {
   methods: {
     createFreelancer() {
       FreelancersOps.createOneFreelancer(this.data)
-        .then(() => {
+        .then((response) => {
+          let token = response.data.token;
+          localStorage.setItem("jwt", token);
           this.$toasted.show('Account created successfully!')
-          this.$router.push('/')
         })
         .catch(error => {
-          this.$toasted.show(error)
           this.$toasted.show('Please enter all the fields!')
         })
     }
